@@ -55,14 +55,6 @@ public class BlendshapeAnimator : MonoBehaviour
         if (!AppManager.Instance.GetEyeAnimsEnabled() && !(frame.AU05_c || frame.AU07_c || frame.AU45_c))
             AppManager.Instance.SetEyeAnimsEnabled(true);
 
-        // Disable Salsa eyelid animation if respective action units are recognised
-        if (AppManager.Instance.GetEyeAnimsEnabled() && (frame.AU05_c || frame.AU07_c || frame.AU45_c))
-            AppManager.Instance.SetEyeAnimsEnabled(false);
-
-        if (!AppManager.Instance.GetEyeAnimsEnabled() && !(frame.AU05_c || frame.AU07_c || frame.AU45_c))
-            AppManager.Instance.SetEyeAnimsEnabled(true);
-
-
         //Debug.LogWarning("frame nb : " + frame.frame.ToString() + " AU45_c : " + frame.AU45_c + " AU45_r : " + frame.AU45_r);
 
         // Blendshape update

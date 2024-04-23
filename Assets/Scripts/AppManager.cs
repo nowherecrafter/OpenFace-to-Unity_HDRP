@@ -83,17 +83,6 @@ public class AppManager : MonoBehaviour
         eyes.EnableEye(status);
     }
 
-    public bool GetLipAnimsEnabled()
-    {
-        return eyes.blinkEnabled || eyes.eyeEnabled; // true if any is enabled
-    }
-
-    public void SetLipAnimsEnabled(bool status)
-    {
-        eyes.EnableEyelidBlink(status);
-        eyes.EnableEye(status);
-    }
-
     public void ToggleVidSync(bool value)
     {
         vidSync = value;
