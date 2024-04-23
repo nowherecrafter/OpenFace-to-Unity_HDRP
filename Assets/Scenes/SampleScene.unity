@@ -3610,7 +3610,7 @@ MonoBehaviour:
   m_Script: {fileID: 974247159, guid: 15b1ae6523c47cc4f9a88453f7173397, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  inspStateFoldoutReferences: 1
+  inspStateFoldoutReferences: 0
   inspStateFoldoutHeads: 0
   inspStateFoldoutHeadProps: 1
   inspStateFoldoutAnimBones: 0
@@ -3630,8 +3630,8 @@ MonoBehaviour:
   characterRoot: {fileID: 1165569063}
   queueProcessor: {fileID: 1165569068}
   lookTarget: {fileID: 963194228}
-  useAffinity: 1
-  affinityPercentage: 1
+  useAffinity: 0
+  affinityPercentage: 0.75
   hasAffinity: 1
   affinityTimerRange: {x: 2, y: 5}
   updateDelay: 0.07
@@ -12901,8 +12901,8 @@ MonoBehaviour:
   characterRoot: {fileID: 2077917201}
   queueProcessor: {fileID: 2077917199}
   lookTarget: {fileID: 963194228}
-  useAffinity: 1
-  affinityPercentage: 1
+  useAffinity: 0
+  affinityPercentage: 0.75
   hasAffinity: 1
   affinityTimerRange: {x: 2, y: 5}
   updateDelay: 0.07
@@ -13544,7 +13544,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2077917194}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 710820541, guid: 15b1ae6523c47cc4f9a88453f7173397, type: 3}
   m_Name: 
@@ -16208,7 +16208,7 @@ MonoBehaviour:
   emphasizerTrigger: 0
   analysisValue: 0
   sampleSize: 512
-  audioUpdateDelay: 0.098375
+  audioUpdateDelay: 0.095
   playheadBias: 2800
   autoAdjustAnalysis: 1
   autoAdjustMicrophone: 0
@@ -16230,7 +16230,7 @@ MonoBehaviour:
   usePersistence: 0
   useTimingsOverride: 1
   globalDurON: 0.125
-  globalDurOFF: 0.1025
+  globalDurOFF: 0.06
   globalDurOffBalance: -0.18
   originalUpdateDelay: 0
   globalNuanceBalance: -0.213
@@ -20404,7 +20404,7 @@ MonoBehaviour:
   m_Script: {fileID: 974247159, guid: 15b1ae6523c47cc4f9a88453f7173397, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  inspStateFoldoutReferences: 1
+  inspStateFoldoutReferences: 0
   inspStateFoldoutHeads: 0
   inspStateFoldoutHeadProps: 1
   inspStateFoldoutAnimBones: 0
@@ -20424,8 +20424,8 @@ MonoBehaviour:
   characterRoot: {fileID: 389771266191740299}
   queueProcessor: {fileID: 389771266191740304}
   lookTarget: {fileID: 963194228}
-  useAffinity: 1
-  affinityPercentage: 1
+  useAffinity: 0
+  affinityPercentage: 0.75
   hasAffinity: 1
   affinityTimerRange: {x: 2, y: 5}
   updateDelay: 0.07
@@ -48553,7 +48553,7 @@ MonoBehaviour:
   m_Script: {fileID: 974247159, guid: 15b1ae6523c47cc4f9a88453f7173397, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  inspStateFoldoutReferences: 1
+  inspStateFoldoutReferences: 0
   inspStateFoldoutHeads: 0
   inspStateFoldoutHeadProps: 1
   inspStateFoldoutAnimBones: 0
@@ -48573,8 +48573,8 @@ MonoBehaviour:
   characterRoot: {fileID: 4726240138838764566}
   queueProcessor: {fileID: 4726240138838764571}
   lookTarget: {fileID: 963194228}
-  useAffinity: 1
-  affinityPercentage: 1
+  useAffinity: 0
+  affinityPercentage: 0.75
   hasAffinity: 1
   affinityTimerRange: {x: 2, y: 5}
   updateDelay: 0.07
@@ -51854,7 +51854,7 @@ MonoBehaviour:
   randomHoldDurationMax: 0.5
   configReady: 1
   warnOnNullRefs: 1
-  inspSalsaLinked: 1
+  inspSalsaLinked: 0
   inspStateFoldoutProcessing: 0
   inspStateFoldoutSettings: 0
   inspStateFoldoutEmotes: 0
