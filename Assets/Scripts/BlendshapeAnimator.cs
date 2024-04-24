@@ -11,13 +11,13 @@ public class BlendshapeAnimator : MonoBehaviour
     Transform jawBone;
     Transform eyeLeftBone;
     Transform eyeRightBone;
+    float frameTime;
 
     Frame firstFrame;
 
 
     private void Start()
     {
-
 
         SetFeedback();
         SetAvatarProps();
@@ -42,6 +42,16 @@ public class BlendshapeAnimator : MonoBehaviour
         eyeLeftBone = headBone.GetChild(0).GetChild(1);
         eyeRightBone = headBone.GetChild(0).GetChild(2);
     }
+
+    public void PrepareFExpression(float time, Frame frame, Frame nextFrame)
+    {
+        // calculating the time passed on the current frame
+        frameTime = (time - frame.timestamp) / (nextFrame.timestamp - frame.timestamp);
+
+        // setting expression between the current frame and the one that follows
+        SetFExpression(frame, nextFrame, frameTime);
+    }
+
 
     public  void SetFExpression(Frame frame, Frame nextFrame, float frameTime)
     {
