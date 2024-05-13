@@ -17,9 +17,6 @@ public class FeedbackRecorder : MonoBehaviour
 
 
 
-
-
-
     public FileInfo OutputFile
     {
         get
@@ -74,5 +71,12 @@ public class FeedbackRecorder : MonoBehaviour
     public void RecorderStop()
     {
         m_RecorderController.StopRecording();
+
+        Debug.Log($"Ended recording for file {OutputFile.FullName}");
+
+        
+
     }
+
+    
 }

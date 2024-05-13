@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using CrazyMinnow.SALSA;
 using UnityEngine;
 using UnityEngine.Video;
-
+using System.IO;
 
 
 
@@ -42,18 +42,17 @@ public class AppManager : MonoBehaviour
     [SerializeField] BlendshapeAnimator blendshapeAnimator;
     [SerializeField] FeedbackRecorder feedbackRecorder;
     public AnimParam parameters;
-
+    GameObject ui;
 
     // Videoplayer related variables
     float time = 0f;
     bool isFeedbackPlayed = false;
     int frameIndex = 0;
-    // A flag of sync with the example video affected by the UI
+    // Flags controlled by UI checkboxes
     bool vidSync = true;
+    bool hideUI = false;
+    public bool frameInterpol = true;
 
-
-
-    //bool isFeedbackRecorded = false;
 
 
 
@@ -81,6 +80,14 @@ public class AppManager : MonoBehaviour
     public void ToggleVidSync(bool value)
     {
         vidSync = value;
+    }
+    public void ToggleUIOnRec(bool value)
+    {
+        hideUI = value;
+    }
+    public void ToggleFrameInterpol(bool value)
+    {
+        frameInterpol = value;
     }
     public void LoadFeedbackRessources(int feedbackID)
     {
@@ -121,6 +128,8 @@ public class AppManager : MonoBehaviour
         actionUnitData = Resources.Load<TextAsset>(openFacePath);
         frames = CsvImporter.ParseCSV(actionUnitData);
         blendshapeAnimator.SetFeedback();
+
+        Debug.Log("Video frames : " + player.frameCount + " | OpenFace frames : " + frames.Count);
 
         if (actionUnitData == null)
         {
@@ -167,6 +176,18 @@ public class AppManager : MonoBehaviour
     }
 
 
+    public void ResetRecording()
+    {
+        if (feedbackRecorder != null && feedbackRecorder.m_RecorderController != null)
+        {
+            if (feedbackRecorder.m_RecorderController.IsRecording())
+            {
+                Debug.Log($"Feedback is played preparing to end recording");
+                StartCoroutine(RecordStopDelay(1));
+            }
+            
+        }
+    }
     // Feedback playback functions
     public void PlayFeedback()
     {
@@ -216,6 +237,13 @@ public class AppManager : MonoBehaviour
 
                     // reset values after the video ends
                     ResetPlayFeedback();
+                    ResetRecording();
+                }
+                else
+                {
+                    // reset values after the video ends
+                    ResetPlayFeedback();
+                    ResetRecording();
                 }
 
             }
@@ -238,6 +266,13 @@ public class AppManager : MonoBehaviour
 
                 // reset values after the video ends
                 ResetPlayFeedback();
+                ResetRecording();
+            }
+            else
+            {
+                // reset values after the video ends
+                ResetPlayFeedback();
+                ResetRecording();
             }
 
             if (time > frames[frameIndex].timestamp)
@@ -262,10 +297,7 @@ public class AppManager : MonoBehaviour
         frameIndex = 0;
         time = 0f;
 
-        if (feedbackRecorder.m_RecorderController.IsRecording())
-        {
-            StartCoroutine(RecordStopDelay(1));
-        }
+        
     }
 
 
@@ -280,33 +312,80 @@ public class AppManager : MonoBehaviour
     }
     public void RecordFeedback()
     {
+        
+        if (hideUI)
+        {
+   
+            ui.SetActive(false);
+        }
+            
+
         feedbackRecorder.RecorderStart(activeFeedbackTitle);
         StartCoroutine(FeedbackPlayDelay(1));
         
     }
     IEnumerator RecordStopDelay(float delay)
     {
-
+        Debug.Log($"Waiting before stopping recording");
         //yield on a new YieldInstruction that waits for [delay] seconds.
         yield return new WaitForSeconds(delay);
         feedbackRecorder.RecorderStop();
-
+        
+        if (hideUI)
+            ui.SetActive(true);
+        
     }
     IEnumerator RecordAllFeedbackDelay(float delay)
     {
+        long fileSize = -1;
+        bool fileReady;
+        string path;
 
         foreach (FeedbackElement feedbackElement in feedbackListItems.elements)
         {
+
             LoadFeedbackRessources(feedbackElement.id);
+
+            fileSize = -1;
+            fileReady = false;
             RecordFeedback();
+
+            path = feedbackRecorder.OutputFile.FullName;
             while (feedbackRecorder.m_RecorderController.IsRecording())
             {
                 yield return new WaitForSeconds(delay);
             }
+
+            
+
+            while (!fileReady)
+            {
+                yield return new WaitForSeconds(1f); // Check every second
+
+                if (File.Exists(path))
+                {
+                    long newFileSize = new FileInfo(path).Length;
+
+                    if (newFileSize == fileSize && fileSize != -1)
+                    {
+                        // File size hasn't changed, file is likely saved
+                        fileReady = true;
+                        Debug.Log("File is completely saved and ready to be read.");
+                    }
+                    else
+                    {
+                        // Update file size and continue checking
+                        fileSize = newFileSize;
+                    }
+                }
+
+            }
+            yield return new WaitForSeconds(3);
+
         }
 
-
     }
+
     public void RecordAllFeedback()
     {
         StartCoroutine(RecordAllFeedbackDelay(0.1f));
@@ -336,6 +415,8 @@ public class AppManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        ui = GameObject.Find("Canvas_Menu");
+
         SetAvatarProps();
 
         voice = GetComponent<AudioSource>();
