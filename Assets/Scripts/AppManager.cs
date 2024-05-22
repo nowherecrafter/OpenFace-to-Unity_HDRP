@@ -17,6 +17,7 @@ public class AppManager : MonoBehaviour
     // A list of feedbacks imported from a json
     FeedbackList feedbackListItems;
     string activeFeedbackTitle;
+    int firstFrameIndex = 0;
     // Feedback resources and interpreters
     string audioClipPath = "Audio/ah_cest_horrible";
     private AudioSource audioSource;
@@ -37,6 +38,7 @@ public class AppManager : MonoBehaviour
     Transform headBone;
     SkinnedMeshRenderer[] smRenderers = new SkinnedMeshRenderer[2];
     AudioSource voice;
+    AudioSource mute = new AudioSource();
     // Eyes object in SALSA
     Eyes eyes;
     [SerializeField] BlendshapeAnimator blendshapeAnimator;
@@ -49,9 +51,11 @@ public class AppManager : MonoBehaviour
     bool isFeedbackPlayed = false;
     int frameIndex = 0;
     // Flags controlled by UI checkboxes
-    bool vidSync = true;
+    bool vidSync = false;
     bool hideUI = false;
     public bool frameInterpol = true;
+    public bool lipSynched = true;
+    public bool noiseReduced = false;
 
 
 
@@ -60,9 +64,28 @@ public class AppManager : MonoBehaviour
     public Transform GetCamera() { return Camera; }
     public SkinnedMeshRenderer[] GetSMRenderers() { return smRenderers; }
     public Transform GetHeadBone() { return headBone; }
-    public Frame getFirstFrame() { return frames[0]; }
     public FeedbackList GetFeedbackList() { return feedbackListItems; }
+    public List<Frame> GetOgFrames() { return frames; }
+    public int GetFirstFrameIndex() { return firstFrameIndex; }
 
+    public void FindFirstFrame()
+    {
+        int i = 0;
+
+        foreach (Frame frame in frames)
+        {
+            //Debug.Log("frame confidence: " + frame.confidence);
+
+            if (frame.confidence > 0.5)
+            {
+                firstFrameIndex = i;
+                //Debug.Log("first frame : " + i);
+                break;
+            }
+
+            i++;
+        }
+    }
 
     // Salsa lip-sync getter/setter
     public bool GetEyeAnimsEnabled()
@@ -75,11 +98,12 @@ public class AppManager : MonoBehaviour
         eyes.EnableEye(status);
     }
 
-    
+
     // Functions affected by UI
     public void ToggleVidSync(bool value)
     {
         vidSync = value;
+        player.Prepare();
     }
     public void ToggleUIOnRec(bool value)
     {
@@ -88,6 +112,24 @@ public class AppManager : MonoBehaviour
     public void ToggleFrameInterpol(bool value)
     {
         frameInterpol = value;
+        blendshapeAnimator.SetFeedback();
+    }
+    public void ToggleLipSync(bool value)
+    {
+        foreach (GameObject avatar in avatars)
+        {
+            if (value)
+                avatar.GetComponent<Salsa>().audioSrc = voice;
+            else
+                avatar.GetComponent<Salsa>().audioSrc = mute;
+
+
+        }
+        lipSynched = false;
+    }
+    public void ToggleNoiseReduction(bool value)
+    {
+        noiseReduced = value;
     }
     public void LoadFeedbackRessources(int feedbackID)
     {
@@ -117,7 +159,7 @@ public class AppManager : MonoBehaviour
         {
             // Set the loaded video clip to the VideoPlayer
             player.clip = videoClip;
-
+            player.Prepare();
         }
         else
         {
@@ -127,6 +169,9 @@ public class AppManager : MonoBehaviour
         openFacePath = feedbackListItems.elements[feedbackID].path_OpenFace;
         actionUnitData = Resources.Load<TextAsset>(openFacePath);
         frames = CsvImporter.ParseCSV(actionUnitData);
+        //Debug.Log("about to find 1st frame");
+        FindFirstFrame();
+
         blendshapeAnimator.SetFeedback();
 
         Debug.Log("Video frames : " + player.frameCount + " | OpenFace frames : " + frames.Count);
@@ -134,13 +179,9 @@ public class AppManager : MonoBehaviour
         if (actionUnitData == null)
         {
             Debug.LogError("Failed to load OpenFace csv from Resources folder: " + openFacePath);
-        } 
-        // A temporary solution for video not playing for the first time due to some file format error
-        else
-        {
-            PlayFeedback();
         }
         
+
     }
 
 
@@ -185,26 +226,23 @@ public class AppManager : MonoBehaviour
                 Debug.Log($"Feedback is played preparing to end recording");
                 StartCoroutine(RecordStopDelay(1));
             }
-            
+
         }
     }
     // Feedback playback functions
+
     public void PlayFeedback()
     {
         // Check if the VideoPlayer component is attributed
         if (vidSync && player != null)
         {
-            // Prepare and play the video assigned to the VideoPlayer component only then play the avatar's animation
-            player.Prepare();
-            if (player.isPrepared)
-            {
+            // play the video assigned to the VideoPlayer component only then play the avatar's animation
+            
+            player.Play();
 
-                player.Play();
+            isFeedbackPlayed = true;
 
-                isFeedbackPlayed = true;
-
-                voice.Play();
-            }
+            voice.Play();
 
         }
         else
@@ -217,72 +255,61 @@ public class AppManager : MonoBehaviour
     }
     public void PlayFeedbackUpdate()
     {
+
+        //Debug.Log((int)player.frame);
+
+        //if VideoPlayer is active it overrides normal frame index
         if (vidSync && player != null)
         {
-
-            if ((int)player.frame > -1)
-            {
-                if ((int)player.frame < frames.Count - 1)
-                {
-                    blendshapeAnimator.PrepareFExpression(time, frames[(int)player.frame], frames[(int)player.frame + 1]);
-
-                    // set back animation time if VideoPlayer lags behind
-                    if (time > player.time + 0.04 || time < player.time)
-                        time = frames[(int)player.frame].timestamp;
-
-                }
-                else if ((int)player.frame == frames.Count - 1)
-                {
-                    blendshapeAnimator.PrepareFExpression(time, frames[(int)player.frame], frames[(int)player.frame]);
-
-                    // reset values after the video ends
-                    ResetPlayFeedback();
-                    ResetRecording();
-                }
-                else
-                {
-                    // reset values after the video ends
-                    ResetPlayFeedback();
-                    ResetRecording();
-                }
-
-            }
-
+            frameIndex = (int)player.frame;
         }
-        else
+
+        //if VideoPlayer's active frame isn't null or videoplayer is disabled
+        if ((int)player.frame > -1 || !vidSync || player == null)
         {
+            //Debug.Log(frameIndex + " | " + (frames.Count - 1));
 
             if (frameIndex < frames.Count - 1)
             {
+                if (frameIndex >= firstFrameIndex)
+                    blendshapeAnimator.PrepareFExpression(time, frameIndex);
 
-                blendshapeAnimator.PrepareFExpression(time, frames[frameIndex], frames[frameIndex + 1]);
-
+                // set back animation time if VideoPlayer is active and lags behind
+                if (vidSync && player != null)
+                {
+                    if (time > player.time + 0.04 || time < player.time)
+                        time = frames[(int)player.frame].timestamp;
+                }
             }
             // case for the last frame
             else if (frameIndex == frames.Count - 1)
             {
-
-                blendshapeAnimator.PrepareFExpression(time, frames[frameIndex], frames[frameIndex]);
+                if (frameIndex >= firstFrameIndex)
+                    blendshapeAnimator.PrepareFExpression(time, frameIndex);
 
                 // reset values after the video ends
                 ResetPlayFeedback();
                 ResetRecording();
             }
-            else
+            else if (frameIndex > frames.Count - 1)
             {
                 // reset values after the video ends
+                Debug.Log("frame index: " + frameIndex + " | last frame: " + (frames.Count - 1));
                 ResetPlayFeedback();
                 ResetRecording();
             }
 
-            if (time > frames[frameIndex].timestamp)
+            if ((!vidSync || player == null) && time > frames[frameIndex].timestamp)
             {
+                //Debug.Log("frameIndex + 1");
                 frameIndex++;
             }
 
-
+            
 
         }
+
+        
 
         // time is unstoppable
         time += Time.deltaTime;
@@ -292,12 +319,17 @@ public class AppManager : MonoBehaviour
     }
     public void ResetPlayFeedback()
     {
-        isFeedbackPlayed = false;
-        Instance.SetEyeAnimsEnabled(true);
+        
         frameIndex = 0;
+        isFeedbackPlayed = false;
+        
+        Instance.SetEyeAnimsEnabled(true);
         time = 0f;
 
-        
+        if (vidSync && player != null) {
+            player.Stop();
+            player.frame = 0;
+        }
     }
 
 
@@ -415,6 +447,7 @@ public class AppManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+
         ui = GameObject.Find("Canvas_Menu");
 
         SetAvatarProps();
@@ -423,12 +456,15 @@ public class AppManager : MonoBehaviour
 
         frames = CsvImporter.ParseCSV(actionUnitData);
 
-        LoadFeedbackRessources(1);
+        LoadFeedbackRessources(0);
+
+
     }
 
     // Update is called once per frame
     void Update()
     {
+        
         // Check if a feedback is played
         if (isFeedbackPlayed)
         {
@@ -442,6 +478,5 @@ public class AppManager : MonoBehaviour
         //    PlayFeedback();
         //}
     }
-
 
 }

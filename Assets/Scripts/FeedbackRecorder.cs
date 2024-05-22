@@ -57,7 +57,8 @@ public class FeedbackRecorder : MonoBehaviour
         // Setup Recording
         controllerSettings.AddRecorderSettings(m_Settings);
         controllerSettings.SetRecordModeToManual();
-        controllerSettings.FrameRate = 25.0f;
+        controllerSettings.FrameRate = 60.0f;
+        controllerSettings.CapFrameRate = true;
 
         RecorderOptions.VerboseMode = false;
         m_RecorderController.PrepareRecording();

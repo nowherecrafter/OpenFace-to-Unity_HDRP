@@ -1,5 +1,5 @@
-{ 
-  "elements" : [ 
+{
+  "elements": [
     {
       "id": 0,
       "name": "ah_cest_horrible",
@@ -139,6 +139,13 @@
       "path_OpenFace": "OpenFace/vasy_je_t_ecoute_shake_main",
       "path_Video": "Video/vasy_je_t_ecoute_shake_main",
       "path_Audio": "Audio/vasy_je_t_ecoute_shake_main"
+    },
+    {
+      "id": 20,
+      "name": "SMYLE_AD_GGLM_GG_1_test",
+      "path_OpenFace": "OpenFace/SMYLE_AD_GGLM_GG_1_test",
+      "path_Video": "Video/SMYLE_AD_GGLM_GG_1_test",
+      "path_Audio": "Audio/SMYLE_AD_GGLM_GG_1_test"
     }
   ]
 }
